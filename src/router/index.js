@@ -3,7 +3,20 @@ import sourceData from "@/data.json"
 
 
 const routes = [
-  { path: '/', name: 'Home', component: () => import('@/views/Home.vue') },
+  { 
+    path: '/', 
+    name: 'Home', 
+    component: () => import('@/views/Home.vue'),
+    alias: '/home'
+  },
+  {
+    path: '/index', redirect: '/'  // { name: 'Home' }   or:   to => '/'
+  },
+  { 
+    path: '/login', 
+    name: 'login', 
+    component: () => import('@/views/Login.vue') 
+  },
   { 
     path: '/destination/:id/:slug', 
     name: 'destination.show', 
@@ -31,7 +44,31 @@ const routes = [
     ]
   },
   {
-    path: '/:pathMatch(.*)*', name: 'NotFound', component: () => import('@/views/NotFound.vue')
+    path: '/protected', 
+    name: 'protected', 
+    components:{
+      default: ()=> import('@/views/Protected.vue'),
+      LeftSidebar: ()=> import('@/components/LeftSidebar.vue')
+    },
+    meta: {
+      requiresAuth: true
+    }
+  },
+  {
+    path: '/invoices',
+    name: 'invoices',
+    components:{
+      default: ()=> import('@/views/Invoices.vue'),
+      LeftSidebar: ()=> import('@/components/LeftSidebar.vue')
+    },
+    meta:{
+      requiresAuth: true,
+    }
+  },
+  {
+    path: '/:pathMatch(.*)*', 
+    name: 'NotFound', 
+    component: () => import('@/views/NotFound.vue')
   }
 ]
 
@@ -44,6 +81,12 @@ const router = createRouter({
     })
   }
   // linkActiveClass: 'vue-school-active-link',  // 别名
+})
+
+router.beforeEach((to, from)=>{
+  if(to.meta.requiresAuth && !window.user){
+    return { name: 'login', query: { redirect: to.fullPath } }
+  }
 })
 
 export default router
